@@ -8,7 +8,7 @@
 
 * 优化 pm2 的部署，当 pm2 为 cluster 模式时，允许注册多个一样的服务地址。
 
-* todo: 允许一个微服务向多个注册中心注册，将在 cloudoll 中实现。
+* 如果微服务注册了 notAConsumer, 那么，标记了 notAConsumer 的 socket 将不能获取服务列表。
 
 ## 请求消息
 
