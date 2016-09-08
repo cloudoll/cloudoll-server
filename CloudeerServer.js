@@ -66,7 +66,11 @@ CloudeerServer.prototype.startService = function () {
 
 //向每一台客户端发布服务器列表
 CloudeerServer.prototype.onServicesChanged = function () {
-  console.log('微服务发生变化，需要分发服务列表，份数：', this.clients.length);
+  console.log('微服务发生变化');
+  console.log('当前微服务数量：', this.clients.length);
+  console.log('其中消费者的个数：', this.clients.filter(function (ele) {
+    return !ele.tag.notAConsumer;
+  }).length);
   var services = {};
   this.clients.forEach(function (ele) {
     if (ele.tag) {
@@ -83,7 +87,10 @@ CloudeerServer.prototype.onServicesChanged = function () {
   });
 
   this.clients.forEach(function (socket) {
-    socket.write(JSON.stringify({errno: 0, cmd: 'get-services', data: services}));
+    console.log(socket.tag);
+    if (!socket.tag.notAConsumer) {
+      socket.write(JSON.stringify({errno: 0, cmd: 'get-services', data: services}));
+    }
   }.bind(this));
 };
 
