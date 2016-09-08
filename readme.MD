@@ -97,7 +97,20 @@
 用法
 
 ```bash
-node add-user -u username -p password
+  Usage: add-user [options]
+
+  Options:
+
+    -h, --help               output usage information
+    -V, --version            output the version number
+    -u, --username [type]    用户名（必填）
+    -p, --password [string]  密码（必填）
+
+  Examples:
+
+    $ node add-user -u username -p password
+
+
 
 ```
 
