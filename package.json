@@ -11,5 +11,8 @@
     "url": "git@code.aliyun.com:cloudark/cloudeer-server.git"
   },
   "author": "Xie Zhengwei <iam@xiezhengwei.com>",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^2.9.0"
+  }
 }

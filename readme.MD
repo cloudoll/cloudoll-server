@@ -35,12 +35,60 @@
 成功响应
 
 ```
-{ errno: 0, cmd: 'login' }
+{
+    "errno": 0, 
+    "cmd": "login"
+}
 ```
 
-服务器端主动拒绝
+错误的响应
 
 ```
-{ errno: 403, errText: '登录失败，拒绝连接。' }
+{
+    "errno": 403, 
+    "errText": "登录失败，拒绝连接。", 
+    "cmd": "login"
+}
+```
+
+服务器返回微服务列表
+
+```
+{
+    "errno": 0, 
+    "cmd": "get-services", 
+    "data": {
+        "cloudoll": {
+            "hosts": [
+                {
+                    "host": "30.97.93.78", 
+                    "port": 3009, 
+                    "baseUri": ""
+                }, 
+                {
+                    "host": "30.97.93.78", 
+                    "port": 3009, 
+                    "baseUri": ""
+                }, 
+                {
+                    "host": "30.97.93.78", 
+                    "port": 3009, 
+                    "baseUri": ""
+                }
+            ]
+        }
+    }
+}
+```
+
+## 增加服务器用户名和密码
+
+请使用 add-user.js
+
+用法
+
+```bash
+node add-user -u username -p password
+
 ```
 
