@@ -16,19 +16,26 @@
 登录
 
 ```
-{ cmd: 'login', data: { username: 'test1', password: 'test' } }
+{
+    "cmd": "login", 
+    "data": {
+        "username": "test1", 
+        "password": "test"
+    }
+}
 ```
 
 注册微服务
 
 ```
-{ 
-  cmd: 'reg-service',
-  data:
-   { appName: 'cloudoll',
-     host: '30.97.93.78',
-     port: 3009,
-     baseUri: '' } 
+{
+    "cmd": "reg-service", 
+    "data": {
+        "appName": "cloudoll", 
+        "host": "30.97.93.78", 
+        "port": 3009, 
+        "baseUri": ""
+    }
 }
 ```
 
