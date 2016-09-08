@@ -34,7 +34,8 @@
         "appName": "cloudoll", 
         "host": "30.97.93.78", 
         "port": 3009, 
-        "baseUri": ""
+        "baseUri": "",
+        "notAConsumer": true
     }
 }
 ```
