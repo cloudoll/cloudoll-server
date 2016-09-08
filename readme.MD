@@ -103,8 +103,8 @@
 
     -h, --help               output usage information
     -V, --version            output the version number
-    -u, --username [type]    用户名（必填）
-    -p, --password [string]  密码（必填）
+    -u, --username           用户名（必填）
+    -p, --password           密码（必填）
 
   Examples:
 
