@@ -66,7 +66,7 @@ CloudeerServer.prototype.startService = function () {
 
 //向每一台客户端发布服务器列表
 CloudeerServer.prototype.onServicesChanged = function () {
-  console.log('client 数量：', this.clients.length);
+  console.log('微服务发生变化，需要分发服务列表，份数：', this.clients.length);
   var services = {};
   this.clients.forEach(function (ele) {
     if (ele.tag) {
