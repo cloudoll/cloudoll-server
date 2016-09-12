@@ -1,6 +1,12 @@
 const net   = require('net');
 const fs    = require('fs');
+const os    = require('os');
 const share = require('./share');
+
+const sendJson = function (socket, json) {
+  socket.write(JSON.stringify(json) + os.EOL);
+};
+
 
 function CloudeerServer(options) {
   options      = options || {};
@@ -18,29 +24,37 @@ CloudeerServer.prototype.startService = function () {
     var _this = this;
     console.log('有客户端请求连接进入，等待身份认证...');
 
-    socket.on('data', (data)=> {
-      console.log("客户端发起的命令：", data.toString());
-      var jsonInfo;
-      try {
-        jsonInfo = JSON.parse(data.toString());
-      } catch (e) {
-        console.error("错误的数据，必须提供 json 格式的数据。");
-        return;
-      }
+    socket.chunk = ""; //每个 socket 得到的消息存在自己的对象你，nodejs 你好牛。
 
-      if (!jsonInfo.cmd) {
-        console.error("错误的消息体，缺少 cmd 参数。");
-      } else {
-        switch (jsonInfo.cmd) {
-          case "login":
-            _this.login(socket, jsonInfo.data.username, jsonInfo.data.password);
-            break;
-          case "reg-service":
-            _this.regService(socket, jsonInfo.data);
-            break;
-          // case "get-services":
-          //   _this.getServices(socket);
-          //   break;
+    socket.on('data', (data)=> {
+      socket.chunk += data.toString();
+      let d_index = socket.chunk.indexOf(os.EOL);
+      if (d_index > -1) {
+        socket.chunk = socket.chunk.substring(0, d_index);
+        // console.log(socket.chunk);
+        var jsonInfo;
+        try {
+          jsonInfo     = JSON.parse(socket.chunk);
+          socket.chunk = "";
+        } catch (e) {
+          console.error("错误的数据，必须提供 json 格式的数据。");
+          return;
+        }
+
+        if (!jsonInfo.cmd) {
+          console.error("错误的消息体，缺少 cmd 参数。");
+        } else {
+          switch (jsonInfo.cmd) {
+            case "login":
+              _this.login(socket, jsonInfo.data.username, jsonInfo.data.password);
+              break;
+            case "reg-service":
+              _this.regService(socket, jsonInfo.data);
+              break;
+            // case "get-services":
+            //   _this.getServices(socket);
+            //   break;
+          }
         }
       }
 
@@ -49,7 +63,7 @@ CloudeerServer.prototype.startService = function () {
 
     socket.on('end', ()=> {
       var tag = socket && socket.tag && socket.tag.appName;
-      console.log(socket.tag && socket.tag.appName || "未命名", '微服务已经退出');
+      console.log(tag || "未命名", '微服务已经退出');
       _this.clients.splice(_this.clients.indexOf(socket), 1);
       _this.onServicesChanged();
     });
@@ -90,7 +104,7 @@ CloudeerServer.prototype.onServicesChanged = function () {
   this.clients.forEach(function (socket) {
     //console.log(socket.tag);
     if (!(socket.tag && socket.tag.notAConsumer)) {
-      socket.write(JSON.stringify({errno: 0, cmd: 'get-services', data: services}));
+      sendJson(socket, {errno: 0, cmd: 'get-services', data: services});
     }
   }.bind(this));
 };
@@ -119,12 +133,12 @@ CloudeerServer.prototype.login = function (socket, username, password) {
   }
 
   if (passed) {
-    socket.write(JSON.stringify({errno: 0, cmd: 'login'}));
+    sendJson(socket, {errno: 0, cmd: 'login'});
     this.clients.push(socket);
     console.log("有客户端加入并成功登录，已经加入列队。");
   } else {
     console.error("登录错误，拒绝加入列队");
-    socket.end('{"errno": 403, "errText": "登录失败，拒绝连接。"}');
+    sendJson(socket, {errno:403, errText: '登录失败，连接被拒。'});
     socket.destroy();
   }
 };
