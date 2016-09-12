@@ -19,7 +19,7 @@ CloudeerServer.prototype.startService = function () {
     console.log('有客户端请求连接进入，等待身份认证...');
 
     socket.on('data', (data)=> {
-      // console.log("客户端发起的命令：", data.toString());
+      console.log("客户端发起的命令：", data.toString());
       var jsonInfo;
       try {
         jsonInfo = JSON.parse(data.toString());
@@ -49,19 +49,20 @@ CloudeerServer.prototype.startService = function () {
 
     socket.on('end', ()=> {
       var tag = socket && socket.tag && socket.tag.appName;
-      console.log(socket.tag.appName || "未命名", '微服务已经退出');
+      console.log(socket.tag && socket.tag.appName || "未命名", '微服务已经退出');
       _this.clients.splice(_this.clients.indexOf(socket), 1);
       _this.onServicesChanged();
     });
   });
 
   this.server.on('error', (err)=> {
-    err.trace();
+    console.error(err);
   });
 
   this.server.listen(this.port, ()=> {
     console.log('注册服务已经启动，监听端口：', this.port);
   });
+
 };
 
 //向每一台客户端发布服务器列表
@@ -87,31 +88,12 @@ CloudeerServer.prototype.onServicesChanged = function () {
   });
 
   this.clients.forEach(function (socket) {
-    console.log(socket.tag);
+    //console.log(socket.tag);
     if (!socket.tag.notAConsumer) {
       socket.write(JSON.stringify({errno: 0, cmd: 'get-services', data: services}));
     }
   }.bind(this));
 };
-
-
-// CloudeerServer.prototype.getServices = function (socket) {
-//   var services = {};
-//   this.clients.forEach(function (ele) {
-//     if (ele.tag) {
-//       if (!services.hasOwnProperty(ele.tag.appName)) {
-//         services[ele.tag.appName]          = {};
-//         services[ele.tag.appName]['hosts'] = [];
-//       }
-//       services[ele.tag.appName]['hosts'].push({
-//         host   : ele.tag.host,
-//         port   : ele.tag.port,
-//         baseUri: ele.tag.baseUri
-//       });
-//     }
-//   });
-//   socket.write(JSON.stringify({errno: 0, cmd: 'get-services', data: services}));
-// };
 
 CloudeerServer.prototype.login = function (socket, username, password) {
   let rightAccess = false;
