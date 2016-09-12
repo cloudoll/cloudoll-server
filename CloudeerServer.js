@@ -89,7 +89,7 @@ CloudeerServer.prototype.onServicesChanged = function () {
 
   this.clients.forEach(function (socket) {
     //console.log(socket.tag);
-    if (!socket.tag.notAConsumer) {
+    if (!(socket.tag && socket.tag.notAConsumer)) {
       socket.write(JSON.stringify({errno: 0, cmd: 'get-services', data: services}));
     }
   }.bind(this));
