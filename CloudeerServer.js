@@ -70,7 +70,7 @@ CloudeerServer.prototype.onServicesChanged = function () {
   console.log('微服务发生变化');
   console.log('当前微服务数量：', this.clients.length);
   console.log('其中消费者的个数：', this.clients.filter(function (ele) {
-    return !ele.tag.notAConsumer;
+    return !(ele.tag && ele.tag.notAConsumer);
   }).length);
   var services = {};
   this.clients.forEach(function (ele) {
