@@ -35,11 +35,11 @@ CloudeerServer.prototype.startService = function () {
       let d_index = socket.chunk.indexOf(os.EOL);
       //console.log('当前 EOL index：', d_index);
       if (d_index > -1) {
-        socket.chunk = socket.chunk.substring(0, d_index);
+        let cmdInfo = socket.chunk.substring(0, d_index);
         // console.log(socket.chunk);
         // var jsonInfo;
         try {
-          let jsonInfo = JSON.parse(socket.chunk);
+          let jsonInfo = JSON.parse(cmdInfo);
           socket.chunk = socket.chunk.substr(d_index + 1);
           //socket.chunk = "";
           if (!jsonInfo.cmd) {
