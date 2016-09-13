@@ -81,8 +81,8 @@ CloudeerServer.prototype.startService = function () {
 
 //向每一台客户端发布服务器列表
 CloudeerServer.prototype.onServicesChanged = function () {
-  console.log('微服务发生变化');
-  console.log('当前微服务数量：', this.clients.length);
+  console.log('微服务发生变化...');
+  console.log('当前服务器数量：', this.clients.length);
   console.log('其中消费者的个数：', this.clients.filter(function (ele) {
     return !(ele.tag && ele.tag.notAConsumer);
   }).length);
@@ -100,6 +100,8 @@ CloudeerServer.prototype.onServicesChanged = function () {
       });
     }
   });
+
+  console.log("现在运行中的微服务的数量：", Object.keys(services).length);
 
   this.clients.forEach(function (socket) {
     //console.log(socket.tag);
