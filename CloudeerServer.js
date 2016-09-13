@@ -59,7 +59,7 @@ CloudeerServer.prototype.startService = function () {
           }
         } catch (e) {
           console.error("错误的数据，必须提供 json 格式的数据。");
-          console.error(e);
+          console.error(socket.chunk);
         }
 
       }
