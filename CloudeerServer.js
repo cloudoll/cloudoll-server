@@ -32,30 +32,32 @@ CloudeerServer.prototype.startService = function () {
       if (d_index > -1) {
         socket.chunk = socket.chunk.substring(0, d_index);
         // console.log(socket.chunk);
-        var jsonInfo;
+        // var jsonInfo;
         try {
-          jsonInfo     = JSON.parse(socket.chunk);
+          let jsonInfo = JSON.parse(socket.chunk);
           socket.chunk = "";
+
+          if (!jsonInfo.cmd) {
+            console.error("错误的消息体，缺少 cmd 参数。");
+          } else {
+            switch (jsonInfo.cmd) {
+              case "login":
+                _this.login(socket, jsonInfo.data.username, jsonInfo.data.password);
+                break;
+              case "reg-service":
+                _this.regService(socket, jsonInfo.data);
+                break;
+              case "reg-methods":
+                console.log("现在有方法注册进来了！");
+                //console.log(jsonInfo.data)
+                // _this.getServices(socket);
+                break;
+            }
+          }
         } catch (e) {
           console.error("错误的数据，必须提供 json 格式的数据。");
-          return;
         }
 
-        if (!jsonInfo.cmd) {
-          console.error("错误的消息体，缺少 cmd 参数。");
-        } else {
-          switch (jsonInfo.cmd) {
-            case "login":
-              _this.login(socket, jsonInfo.data.username, jsonInfo.data.password);
-              break;
-            case "reg-service":
-              _this.regService(socket, jsonInfo.data);
-              break;
-            // case "get-services":
-            //   _this.getServices(socket);
-            //   break;
-          }
-        }
       }
 
     });
@@ -82,8 +84,8 @@ CloudeerServer.prototype.startService = function () {
 //向每一台客户端发布服务器列表
 CloudeerServer.prototype.onServicesChanged = function () {
   console.log('微服务发生变化...');
-  console.log('当前服务器数量：', this.clients.length);
-  console.log('其中消费者的个数：', this.clients.filter(function (ele) {
+  console.log('当前微服务数量：', this.clients.length);
+  console.log('其中纯消费的服务：', this.clients.filter(function (ele) {
     return !(ele.tag && ele.tag.notAConsumer);
   }).length);
   var services = {};
@@ -101,7 +103,7 @@ CloudeerServer.prototype.onServicesChanged = function () {
     }
   });
 
-  console.log("现在运行中的微服务的数量：", Object.keys(services).length);
+  console.log("微服务的数量：", Object.keys(services).length);
 
   this.clients.forEach(function (socket) {
     //console.log(socket.tag);
@@ -140,7 +142,7 @@ CloudeerServer.prototype.login = function (socket, username, password) {
     console.log("有客户端加入并成功登录，已经加入列队。");
   } else {
     console.error("登录错误，拒绝加入列队");
-    sendJson(socket, {errno:403, errText: '登录失败，连接被拒。'});
+    sendJson(socket, {errno: 403, errText: '登录失败，连接被拒。'});
     socket.destroy();
   }
 };
@@ -148,7 +150,6 @@ CloudeerServer.prototype.login = function (socket, username, password) {
 CloudeerServer.prototype.regService = function (socket, tag) {
   console.log("微服务", tag.appName, "已经注册成功。");
   socket.tag = tag;
-  //socket.write(JSON.stringify({errno: 0, cmd: 'reg-service'}));
   this.onServicesChanged();
 };
 
