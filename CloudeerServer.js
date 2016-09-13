@@ -28,8 +28,12 @@ CloudeerServer.prototype.startService = function () {
     socket.chunk = ""; //每个 socket 得到的消息存在自己的对象你，nodejs 你好牛。
 
     socket.on('data', (data)=> {
+      //console.log(data.toString());
+
       socket.chunk += data.toString();
+      //console.log(socket.chunk);
       let d_index = socket.chunk.indexOf(os.EOL);
+      //console.log('当前 EOL index：', d_index);
       if (d_index > -1) {
         socket.chunk = socket.chunk.substring(0, d_index);
         // console.log(socket.chunk);
@@ -37,7 +41,7 @@ CloudeerServer.prototype.startService = function () {
         try {
           let jsonInfo = JSON.parse(socket.chunk);
           socket.chunk = socket.chunk.substr(d_index + 1);
-
+          //socket.chunk = "";
           if (!jsonInfo.cmd) {
             console.error("错误的消息体，缺少 cmd 参数。");
           } else {
@@ -55,12 +59,12 @@ CloudeerServer.prototype.startService = function () {
           }
         } catch (e) {
           console.error("错误的数据，必须提供 json 格式的数据。");
+          console.error(e);
         }
 
       }
 
     });
-
 
     socket.on('end', ()=> {
       var tag = socket && socket.tag && socket.tag.appName;
@@ -104,12 +108,24 @@ CloudeerServer.prototype.onServicesChanged = function () {
 
   console.log("微服务的数量：", Object.keys(services).length);
 
+  let errClients = [];
   this.clients.forEach(function (socket) {
     //console.log(socket.tag);
-    if (!(socket.tag && socket.tag.notAConsumer)) {
-      sendJson(socket, {errno: 0, cmd: 'get-services', data: services});
+    if (socket.writable) {
+      if (!(socket.tag && socket.tag.notAConsumer)) {
+        sendJson(socket, {errno: 0, cmd: 'get-services', data: services});
+      }
+    } else {
+      socket.destroy();
+      errClients.push(errClients);
     }
   }.bind(this));
+
+  //移除 由于 end 没有触发的错误 socket
+  for (i = errClients.length - 1; i >= 0; i = i - 1) {
+    this.clients.splice(this.clients.indexOf(errClients[i]), 1)
+  }
+
 };
 
 CloudeerServer.prototype.login = function (socket, username, password) {
@@ -154,11 +170,15 @@ CloudeerServer.prototype.regService = function (socket, tag) {
 
 CloudeerServer.prototype.regMethods = function (data) {
   console.log("现在有方法注册进来了！");
- if (!data.hasOwnProperty('service')){
-   console.error('JSON 数据中需要参数 service。');
-   return false;
- }
-  if (!data.hasOwnProperty('methods')){
+  if (!data) {
+    console.error('数据格式错误。');
+    return false;
+  }
+  if (!data.hasOwnProperty('service')) {
+    console.error('JSON 数据中需要参数 service。');
+    return false;
+  }
+  if (!data.hasOwnProperty('methods')) {
     console.error('JSON 数据中需要参数 methods。');
     return false;
   }
@@ -169,13 +189,11 @@ CloudeerServer.prototype.regMethods = function (data) {
       whichOne = index;
       return true;
     }
-
-    if (whichOne >= 0) {
-      methods.splice(whichOne, 1);
-    }
-
-    methods.push(data);
   });
+  if (whichOne >= 0) {
+    methods.splice(whichOne, 1);
+  }
+  methods.push(data);
 
 };
 
