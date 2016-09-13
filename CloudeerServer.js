@@ -2,6 +2,7 @@ const net   = require('net');
 const fs    = require('fs');
 const os    = require('os');
 const share = require('./share');
+var methods = require('./methods');
 
 const sendJson = function (socket, json) {
   socket.write(JSON.stringify(json) + os.EOL);
@@ -35,7 +36,7 @@ CloudeerServer.prototype.startService = function () {
         // var jsonInfo;
         try {
           let jsonInfo = JSON.parse(socket.chunk);
-          socket.chunk = "";
+          socket.chunk = socket.chunk.substr(d_index + 1);
 
           if (!jsonInfo.cmd) {
             console.error("错误的消息体，缺少 cmd 参数。");
@@ -48,9 +49,7 @@ CloudeerServer.prototype.startService = function () {
                 _this.regService(socket, jsonInfo.data);
                 break;
               case "reg-methods":
-                console.log("现在有方法注册进来了！");
-                //console.log(jsonInfo.data)
-                // _this.getServices(socket);
+                _this.regMethods(jsonInfo.data);
                 break;
             }
           }
@@ -153,5 +152,31 @@ CloudeerServer.prototype.regService = function (socket, tag) {
   this.onServicesChanged();
 };
 
+CloudeerServer.prototype.regMethods = function (data) {
+  console.log("现在有方法注册进来了！");
+ if (!data.hasOwnProperty('service')){
+   console.error('JSON 数据中需要参数 service。');
+   return false;
+ }
+  if (!data.hasOwnProperty('methods')){
+    console.error('JSON 数据中需要参数 methods。');
+    return false;
+  }
+
+  var whichOne = -1;
+  methods.filter(function (ele, index) {
+    if (ele.service.toLocaleLowerCase() == data.service.toLowerCase()) {
+      whichOne = index;
+      return true;
+    }
+
+    if (whichOne >= 0) {
+      methods.splice(whichOne, 1);
+    }
+
+    methods.push(data);
+  });
+
+};
 
 module.exports = CloudeerServer;
