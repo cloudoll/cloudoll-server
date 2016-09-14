@@ -25,9 +25,9 @@ CloudeerServer.prototype.startService = function () {
     var _this = this;
     console.log('有客户端请求连接进入，等待身份认证...');
     socket.setKeepAlive(true, 5000); //保持连接，45 秒一次、
-    // socket.setTimeout(6000, function () {
-    //   console.log("超时了。。。");
-    // });
+    socket.setTimeout(10000, function () {
+      console.log("超时检测。。。", socket.writable);
+    });
 
     socket.on('timeout', function () {
       console.log("timeout 已经触发！！");
