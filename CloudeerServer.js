@@ -123,7 +123,7 @@ CloudeerServer.prototype.startService = function () {
 CloudeerServer.prototype.onServicesChanged = function () {
   console.log('微服务发生变化...');
   console.log('当前微服务数量：', this.clients.length);
-  console.log('其中纯消费的服务：', this.clients.filter(function (ele) {
+  console.log('其中为消费者的服务：', this.clients.filter(function (ele) {
     return !(ele.tag && ele.tag.notAConsumer);
   }).length);
   var services = {};
