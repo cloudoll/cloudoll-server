@@ -25,7 +25,7 @@ function CloudeerServer(options) {
   this.port           = options.port;
   this.clients        = [];
   this.server         = null;
-  this.timeOutInteval = 10000; //超时时间
+  this.timeOutInteval = 60000; //超时时间
 
 }
 
@@ -37,7 +37,7 @@ CloudeerServer.prototype.startService = function () {
   this.server = net.createServer((socket)=> {
     var _this = this;
     console.log('有客户端请求连接进入，等待身份认证...');
-    socket.setKeepAlive(true, 5000); //保持连接，45 秒、
+    socket.setKeepAlive(true, 45000); //保持连接，45 秒、
 
 
     // socket.setTimeout(this.timeOutInteval, ()=> socket.isActive = false);
