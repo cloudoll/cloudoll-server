@@ -95,6 +95,9 @@ CloudeerServer.prototype.startService = function () {
     socket.on('end', ()=> {
       var tag = socket && socket.tag && socket.tag.appName;
       console.log(tag || "未命名", '微服务已经退出');
+      if (socket.timerAlive) {
+        clearTimeout(socket.timerAlive);
+      }
       _this.removeClient(socket);
       _this.onServicesChanged();
 
@@ -102,6 +105,9 @@ CloudeerServer.prototype.startService = function () {
 
     socket.on('error', (err)=> {
       console.error(err);
+      if (socket.timerAlive) {
+        clearTimeout(socket.timerAlive);
+      }
       _this.removeClient(socket);
       _this.onServicesChanged();
 
