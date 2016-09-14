@@ -109,9 +109,7 @@
 
   Examples:
 
-    $ node add-user -u username -p password
-
-
+    $ node add-user -u knock -p password
 
 ```
 

@@ -24,6 +24,14 @@ CloudeerServer.prototype.startService = function () {
   this.server = net.createServer((socket)=> {
     var _this = this;
     console.log('有客户端请求连接进入，等待身份认证...');
+    socket.setKeepAlive(true, 45000); //保持连接，45 秒一次、
+    // socket.setTimeout(6000, function () {
+    //   console.log("超时了。。。");
+    // });
+
+    socket.on('timeout', function () {
+      console.log("timeout 已经触发！！");
+    });
 
     socket.chunk = ""; //每个 socket 得到的消息存在自己的对象你，nodejs 你好牛。
 
@@ -59,6 +67,7 @@ CloudeerServer.prototype.startService = function () {
           }
         } catch (e) {
           console.error("错误的数据，必须提供 json 格式的数据。");
+          console.error(socket.remoteAddress, socket.remotePort);
           console.error(socket.chunk);
         }
 
@@ -72,6 +81,7 @@ CloudeerServer.prototype.startService = function () {
       _this.clients.splice(_this.clients.indexOf(socket), 1);
       _this.onServicesChanged();
     });
+
   });
 
   this.server.on('error', (err)=> {
