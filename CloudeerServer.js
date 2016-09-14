@@ -75,7 +75,7 @@ CloudeerServer.prototype.startService = function () {
                 }
                 socket.timerAlive = setTimeout(()=> {
                   var tag = socket && socket.tag && socket.tag.appName;
-                  console.log(tag || "未命名", '检测到心跳，现在清除...');
+                  console.log(tag || "未命名", '未检测到心跳，现在清除...');
                   _this.removeClient(socket);
                   _this.onServicesChanged();
                 }, _this.timeOutInteval);
