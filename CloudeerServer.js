@@ -82,6 +82,11 @@ CloudeerServer.prototype.startService = function () {
       _this.onServicesChanged();
     });
 
+    socket.on('error', (err)=> {
+      console.error(err);
+      _this.removeClient(socket);
+    });
+
   });
 
   this.server.on('error', (err)=> {
@@ -126,16 +131,31 @@ CloudeerServer.prototype.onServicesChanged = function () {
         sendJson(socket, {errno: 0, cmd: 'get-services', data: services});
       }
     } else {
-      socket.destroy();
-      errClients.push(errClients);
+      errClients.push(socket);
     }
   }.bind(this));
 
   //移除 由于 end 没有触发的错误 socket
   for (i = errClients.length - 1; i >= 0; i = i - 1) {
-    this.clients.splice(this.clients.indexOf(errClients[i]), 1)
+    this.removeClient(errClients[i]);
+    // this.clients.splice(this.clients.indexOf(errClients[i]), 1)
   }
 
+};
+
+
+CloudeerServer.prototype.removeClient = function (client) {
+  try {
+    client.end();
+    // client.destroy();
+  } catch (e) {
+  }
+  try {
+    // client.end();
+    client.destroy();
+  } catch (e) {
+  }
+  this.clients.splice(this.clients.indexOf(client), 1)
 };
 
 CloudeerServer.prototype.login = function (socket, username, password) {
