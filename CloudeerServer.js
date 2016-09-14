@@ -40,11 +40,11 @@ CloudeerServer.prototype.startService = function () {
     socket.setKeepAlive(true, 5000); //保持连接，45 秒、
 
 
-    socket.setTimeout(this.timeOutInteval, ()=> socket.isActive = false);
+    // socket.setTimeout(this.timeOutInteval, ()=> socket.isActive = false);
 
     socket.timerAlive = setInterval(function () {
       if (socket.isActive) {
-        socket.setTimeout(_this.timeOutInteval, ()=> socket.isActive = false);
+        setTimeout(()=>socket.isActive = false, _this.timeOutInteval);
       } else {
         var tag = socket && socket.tag && socket.tag.appName;
         console.log(tag || "未命名", '没有发送 ping 命令，即将被清除');
