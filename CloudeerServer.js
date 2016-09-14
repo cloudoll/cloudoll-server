@@ -84,7 +84,8 @@ CloudeerServer.prototype.startService = function () {
                 _this.regMethods(jsonInfo.data);
                 break;
               case "ping":
-                console.log("ping");
+                var tag = socket && socket.tag && socket.tag.appName;
+                console.log(tag || "未命名", " 服务，正在 ping...");
                 break;
             }
           }
