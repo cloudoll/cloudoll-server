@@ -40,19 +40,18 @@ CloudeerServer.prototype.startService = function () {
     socket.setKeepAlive(true, 5000); //保持连接，45 秒、
 
 
-    socket.setTimeout(this.timeOutInteval, function () {
-      socket.isActive = false;
-    });
+    socket.setTimeout(this.timeOutInteval, ()=> socket.isActive = false);
 
-    socket.on('timeout', function () {
+    socket.timerAlive = setInterval(function () {
       if (socket.isActive) {
-        socket.setTimeout(_this.timeOutInteval);
+        socket.setTimeout(_this.timeOutInteval, ()=> socket.isActive = false);
       } else {
         var tag = socket && socket.tag && socket.tag.appName;
         console.log(tag || "未命名", '没有发送 ping 命令，即将被清除');
         socket.end();
       }
-    });
+    }, this.timeOutInteval - 1000);
+
 
     socket.chunk = ""; //每个 socket 得到的消息存在自己的对象你，nodejs 你好牛。
 
@@ -66,12 +65,6 @@ CloudeerServer.prototype.startService = function () {
       //console.log('当前 EOL index：', d_index);
       if (d_index > -1) {
         let cmdInfo = socket.chunk.substring(0, d_index);
-        // if (cmdInfo == "ping"){
-        //
-        // }
-
-        // console.log(socket.chunk);
-        // var jsonInfo;
         try {
           let jsonInfo = JSON.parse(cmdInfo);
           socket.chunk = socket.chunk.substr(d_index + 1);
@@ -89,6 +82,9 @@ CloudeerServer.prototype.startService = function () {
               case "reg-methods":
                 _this.regMethods(jsonInfo.data);
                 break;
+              case "ping":
+                console.log("ping");
+                break;
             }
           }
         } catch (e) {
@@ -104,7 +100,7 @@ CloudeerServer.prototype.startService = function () {
     socket.on('end', ()=> {
       var tag = socket && socket.tag && socket.tag.appName;
       console.log(tag || "未命名", '微服务已经退出');
-      _this.clients.splice(_this.clients.indexOf(socket), 1);
+      _this.removeClient(socket);
       _this.onServicesChanged();
     });
 
@@ -180,6 +176,9 @@ CloudeerServer.prototype.removeClient = function (client) {
     // client.end();
     client.destroy();
   } catch (e) {
+  }
+  if (client.timerAlive) {
+    clearInterval(client.timerAlive);
   }
   this.clients.splice(this.clients.indexOf(client), 1)
 };
