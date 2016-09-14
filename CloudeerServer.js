@@ -25,7 +25,7 @@ function CloudeerServer(options) {
   this.port           = options.port;
   this.clients        = [];
   this.server         = null;
-  this.timeOutInteval = 60000; //超时时间, cloudoll 客户端发送的是 30 秒
+  this.timeOutInteval = 11000; //超时时间, cloudoll 客户端发送的是 30 秒
 }
 
 
@@ -69,13 +69,13 @@ CloudeerServer.prototype.startService = function () {
                 break;
               case "ping":
                 var tag = socket && socket.tag && socket.tag.appName;
-                console.log(tag || "未命名", " 服务，正在 ping...", _this.timeOutInteval, "秒后将被清除。");
+                //console.log(tag || "未命名", " 服务，正在 ping...", _this.timeOutInteval, "秒后将被清除。");
                 if (socket.timerAlive) {
                   clearTimeout(socket.timerAlive);
                 }
                 socket.timerAlive = setTimeout(()=> {
                   var tag = socket && socket.tag && socket.tag.appName;
-                  console.log(tag || "未命名", '没有发送 ping 命令，即将被清除');
+                  console.log(tag || "未命名", '检测到心跳，现在清除...');
                   _this.removeClient(socket);
                   _this.onServicesChanged();
                 }, _this.timeOutInteval);
