@@ -48,7 +48,8 @@ CloudeerServer.prototype.startService = function () {
       } else {
         var tag = socket && socket.tag && socket.tag.appName;
         console.log(tag || "未命名", '没有发送 ping 命令，即将被清除');
-        socket.end();
+        // socket.end();
+        this.removeClient(socket);
       }
     }, this.timeOutInteval - 1000);
 
@@ -101,7 +102,6 @@ CloudeerServer.prototype.startService = function () {
       var tag = socket && socket.tag && socket.tag.appName;
       console.log(tag || "未命名", '微服务已经退出');
       _this.removeClient(socket);
-      _this.onServicesChanged();
     });
 
     socket.on('error', (err)=> {
@@ -180,7 +180,8 @@ CloudeerServer.prototype.removeClient = function (client) {
   if (client.timerAlive) {
     clearInterval(client.timerAlive);
   }
-  this.clients.splice(this.clients.indexOf(client), 1)
+  this.clients.splice(this.clients.indexOf(client), 1);
+  this.onServicesChanged();
 };
 
 CloudeerServer.prototype.login = function (socket, username, password) {
