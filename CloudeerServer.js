@@ -49,7 +49,7 @@ CloudeerServer.prototype.startService = function () {
         var tag = socket && socket.tag && socket.tag.appName;
         console.log(tag || "未命名", '没有发送 ping 命令，即将被清除');
         // socket.end();
-        this.removeClient(socket);
+        _this.removeClient(socket);
       }
     }, this.timeOutInteval - 1000);
 
