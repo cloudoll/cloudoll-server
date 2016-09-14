@@ -8,14 +8,27 @@ const sendJson = function (socket, json) {
   socket.write(JSON.stringify(json) + os.EOL);
 };
 
+// const socketChecker = function (socket) {
+//   socket.setTimeout(10000, function () {
+//     if (socket.isActive){
+//       socketChecker(socket);
+//     }else{
+//       socket.end();
+//     }
+//
+//   });
+// };
+
 
 function CloudeerServer(options) {
-  options      = options || {};
-  this.port    = options.port;
-  this.clients = [];
-  this.server  = null;
+  options             = options || {};
+  this.port           = options.port;
+  this.clients        = [];
+  this.server         = null;
+  this.timeOutInteval = 10000; //超时时间
 
 }
+
 
 CloudeerServer.prototype.startService = function () {
 
@@ -24,13 +37,21 @@ CloudeerServer.prototype.startService = function () {
   this.server = net.createServer((socket)=> {
     var _this = this;
     console.log('有客户端请求连接进入，等待身份认证...');
-    socket.setKeepAlive(true, 15000); //保持连接，45 秒一次、
-    socket.setTimeout(10000, function () {
-      console.log("超时检测。。。", socket.writable);
+    socket.setKeepAlive(true, 5000); //保持连接，45 秒、
+
+
+    socket.setTimeout(this.timeOutInteval, function () {
+      socket.isActive = false;
     });
 
     socket.on('timeout', function () {
-      console.log("timeout 已经触发！！");
+      if (socket.isActive) {
+        socket.setTimeout(_this.timeOutInteval);
+      } else {
+        var tag = socket && socket.tag && socket.tag.appName;
+        console.log(tag || "未命名", '没有发送 ping 命令，即将被清除');
+        socket.end();
+      }
     });
 
     socket.chunk = ""; //每个 socket 得到的消息存在自己的对象你，nodejs 你好牛。
@@ -38,12 +59,17 @@ CloudeerServer.prototype.startService = function () {
     socket.on('data', (data)=> {
       //console.log(data.toString());
 
+      socket.isActive = true;
       socket.chunk += data.toString();
       //console.log(socket.chunk);
-      let d_index = socket.chunk.indexOf(os.EOL);
+      let d_index     = socket.chunk.indexOf(os.EOL);
       //console.log('当前 EOL index：', d_index);
       if (d_index > -1) {
         let cmdInfo = socket.chunk.substring(0, d_index);
+        // if (cmdInfo == "ping"){
+        //
+        // }
+
         // console.log(socket.chunk);
         // var jsonInfo;
         try {
