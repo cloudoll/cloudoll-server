@@ -25,7 +25,7 @@ function CloudeerServer(options) {
   this.port           = options.port;
   this.clients        = [];
   this.server         = null;
-  this.timeOutInteval = 60000; //超时时间
+  this.timeOutInteval = 60000; //超时时间, cloudoll 客户端发送的是 30 秒
 }
 
 
@@ -37,23 +37,6 @@ CloudeerServer.prototype.startService = function () {
     var _this = this;
     console.log('有客户端请求连接进入，等待身份认证...');
     socket.setKeepAlive(true, 45000); //保持连接，45 秒、
-
-
-    // socket.setTimeout(this.timeOutInteval, ()=> socket.isActive = false);
-
-    socket.timerAlive = setInterval(function () {
-      if (socket.isActive) {
-        setTimeout(()=>socket.isActive = false, _this.timeOutInteval);
-      } else {
-        var tag = socket && socket.tag && socket.tag.appName;
-        console.log(tag || "未命名", '没有发送 ping 命令，即将被清除');
-        // socket.end();
-        _this.removeClient(socket);
-        _this.onServicesChanged();
-
-      }
-    }, this.timeOutInteval / 2 - 500);
-
 
     socket.chunk = ""; //每个 socket 得到的消息存在自己的对象你，nodejs 你好牛。
 
@@ -87,6 +70,15 @@ CloudeerServer.prototype.startService = function () {
               case "ping":
                 var tag = socket && socket.tag && socket.tag.appName;
                 console.log(tag || "未命名", " 服务，正在 ping...");
+                if (socket.timerAlive){
+                  clearTimeout(socket.timerAlive);
+                }
+                socket.timerAlive = setTimeout(()=>{
+                  var tag = socket && socket.tag && socket.tag.appName;
+                  console.log(tag || "未命名", '没有发送 ping 命令，即将被清除');
+                  _this.removeClient(socket);
+                  _this.onServicesChanged();
+                }, _this.timeOutInteval);
                 break;
             }
           }
@@ -182,9 +174,6 @@ CloudeerServer.prototype.removeClient = function (client) {
     // client.end();
     client.destroy();
   } catch (e) {
-  }
-  if (client.timerAlive) {
-    clearInterval(client.timerAlive);
   }
   this.clients.splice(this.clients.indexOf(client), 1);
 };
