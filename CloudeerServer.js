@@ -69,11 +69,11 @@ CloudeerServer.prototype.startService = function () {
                 break;
               case "ping":
                 var tag = socket && socket.tag && socket.tag.appName;
-                // console.log(tag || "未命名", " 服务，正在 ping...");
-                if (socket.timerAlive){
+                console.log(tag || "未命名", " 服务，正在 ping...", _this.timeOutInteval, "秒后将被清除。");
+                if (socket.timerAlive) {
                   clearTimeout(socket.timerAlive);
                 }
-                socket.timerAlive = setTimeout(()=>{
+                socket.timerAlive = setTimeout(()=> {
                   var tag = socket && socket.tag && socket.tag.appName;
                   console.log(tag || "未命名", '没有发送 ping 命令，即将被清除');
                   _this.removeClient(socket);
