@@ -26,7 +26,6 @@ function CloudeerServer(options) {
   this.clients        = [];
   this.server         = null;
   this.timeOutInteval = 60000; //超时时间
-
 }
 
 
@@ -50,8 +49,10 @@ CloudeerServer.prototype.startService = function () {
         console.log(tag || "未命名", '没有发送 ping 命令，即将被清除');
         // socket.end();
         _this.removeClient(socket);
+        _this.onServicesChanged();
+
       }
-    }, this.timeOutInteval - 1000);
+    }, this.timeOutInteval / 2 - 500);
 
 
     socket.chunk = ""; //每个 socket 得到的消息存在自己的对象你，nodejs 你好牛。
@@ -103,11 +104,15 @@ CloudeerServer.prototype.startService = function () {
       var tag = socket && socket.tag && socket.tag.appName;
       console.log(tag || "未命名", '微服务已经退出');
       _this.removeClient(socket);
+      _this.onServicesChanged();
+
     });
 
     socket.on('error', (err)=> {
       console.error(err);
       _this.removeClient(socket);
+      _this.onServicesChanged();
+
     });
 
   });
@@ -182,7 +187,6 @@ CloudeerServer.prototype.removeClient = function (client) {
     clearInterval(client.timerAlive);
   }
   this.clients.splice(this.clients.indexOf(client), 1);
-  this.onServicesChanged();
 };
 
 CloudeerServer.prototype.login = function (socket, username, password) {
