@@ -6,11 +6,11 @@
 
 * 加入认证
 
-* 优化 pm2 的部署，当 pm2 为 cluster 模式时，允许注册多个一样的服务地址。
+* 优化 pm2 的部署，当 pm2 为 cluster 模式时，允许注册多个一样的服务地址。这样也会增加 cluster 模式下的访问机会。
 
 * 如果微服务注册了 notAConsumer, 那么，标记了 notAConsumer 的 socket 将不能获取服务列表。
 
-## 微服务端发起的请求
+## 客户端发起的请求
 
 
 登录
@@ -32,7 +32,7 @@
     "cmd": "reg-service", 
     "data": {
         "appName": "cloudoll", 
-        "host": "30.97.93.78", 
+        "host": "127.0.0.1", 
         "port": 3009, 
         "baseUri": "",
         "notAConsumer": true
@@ -71,17 +71,17 @@
         "cloudoll": {
             "hosts": [
                 {
-                    "host": "30.97.93.78", 
+                    "host": "127.0.0.1", 
                     "port": 3009, 
                     "baseUri": ""
                 }, 
                 {
-                    "host": "30.97.93.78", 
+                    "host": "127.0.0.1", 
                     "port": 3009, 
                     "baseUri": ""
                 }, 
                 {
-                    "host": "30.97.93.78", 
+                    "host": "127.0.0.1", 
                     "port": 3009, 
                     "baseUri": ""
                 }

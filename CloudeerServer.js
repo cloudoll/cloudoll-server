@@ -25,7 +25,7 @@ function CloudeerServer(options) {
   this.port           = options.port;
   this.clients        = [];
   this.server         = null;
-  this.timeOutInteval = 11000; //超时时间, cloudoll 客户端发送的是 30 秒
+  this.timeOutInteval = 11000; //超时时间, cloudoll 客户端发送 ping 的间隔是 5 秒
 }
 
 
@@ -127,9 +127,9 @@ CloudeerServer.prototype.startService = function () {
 
 //向每一台客户端发布服务器列表
 CloudeerServer.prototype.onServicesChanged = function () {
-  console.log('微服务发生变化...');
-  console.log('当前微服务数量：', this.clients.length);
-  console.log('其中为消费者的服务：', this.clients.filter(function (ele) {
+  console.log('微服务实例发生变化...');
+  console.log('当前微服务实例数量：', this.clients.length);
+  console.log('其中为消费者的实例：', this.clients.filter(function (ele) {
     return !(ele.tag && ele.tag.notAConsumer);
   }).length);
   var services = {};
