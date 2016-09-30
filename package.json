@@ -13,6 +13,7 @@
   "author": "Xie Zhengwei <iam@xiezhengwei.com>",
   "license": "ISC",
   "dependencies": {
+    "cloudoll": "^0.2.6",
     "commander": "^2.9.0"
   }
 }

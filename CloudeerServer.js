@@ -1,12 +1,14 @@
-const net   = require('net');
-const fs    = require('fs');
-const os    = require('os');
-const share = require('./share');
-var methods = require('./methods');
+const net      = require('net');
+const fs       = require('fs');
+const os       = require('os');
+const share    = require('./share');
+var methods    = require('./methods');
+const cmdTools = require('./cmd-tools');
+const tools    = require('cloudoll').tools;
 
-const sendJson = function (socket, json) {
-  socket.write(JSON.stringify(json) + os.EOL);
-};
+// const cmdTools.sendJson = function (socket, json) {
+//   socket.write(JSON.stringify(json) + os.EOL);
+// };
 
 // const socketChecker = function (socket) {
 //   socket.setTimeout(10000, function () {
@@ -32,10 +34,13 @@ function CloudeerServer(options) {
 CloudeerServer.prototype.startService = function () {
 
   console.log("正在启动 Cloudeer 注册服务...");
+  let socketId = 0;
 
   this.server = net.createServer((socket)=> {
     var _this = this;
-    console.log('有客户端请求连接进入，等待身份认证...');
+    socket.id = socketId;
+    console.log('有客户端请求连接进入，等待身份认证...', socket.id);
+    socketId++;
     socket.setKeepAlive(true, 45000); //保持连接，45 秒、
 
     socket.chunk = ""; //每个 socket 得到的消息存在自己的对象你，nodejs 你好牛。
@@ -45,8 +50,10 @@ CloudeerServer.prototype.startService = function () {
 
       socket.isActive = true;
       socket.chunk += data.toString();
-      //console.log(socket.chunk);
-      let d_index     = socket.chunk.indexOf(os.EOL);
+      if (socket.chunk.indexOf('ping') < 0) {
+        tools.debug('服务器端接受: ', socket.chunk);
+      }
+      let d_index = socket.chunk.indexOf(os.EOL);
       //console.log('当前 EOL index：', d_index);
       if (d_index > -1) {
         let cmdInfo = socket.chunk.substring(0, d_index);
@@ -55,37 +62,41 @@ CloudeerServer.prototype.startService = function () {
           socket.chunk = socket.chunk.substr(d_index + 1);
           //socket.chunk = "";
           if (!jsonInfo.cmd) {
-            console.error("错误的消息体，缺少 cmd 参数。");
+            tools.error("错误的消息体，缺少 cmd 参数。");
           } else {
-            switch (jsonInfo.cmd) {
-              case "login":
-                _this.login(socket, jsonInfo.data.username, jsonInfo.data.password);
-                break;
-              case "reg-service":
-                _this.regService(socket, jsonInfo.data);
-                break;
-              case "reg-methods":
-                _this.regMethods(jsonInfo.data);
-                break;
-              case "ping":
-                var tag = socket && socket.tag && socket.tag.appName;
-                //console.log(tag || "未命名", " 服务，正在 ping...", _this.timeOutInteval, "秒后将被清除。");
-                if (socket.timerAlive) {
-                  clearTimeout(socket.timerAlive);
-                }
-                socket.timerAlive = setTimeout(()=> {
+            if (jsonInfo.cmd.startsWith('mnt-')) {
+              cmdTools.handleMonitorCmd(jsonInfo, socket, this.clients);
+            } else {
+              switch (jsonInfo.cmd) {
+                case "login":
+                  _this.login(socket, jsonInfo.data.username, jsonInfo.data.password);
+                  break;
+                case "reg-service":
+                  _this.regService(socket, jsonInfo.data);
+                  break;
+                case "reg-methods":
+                  _this.regMethods(jsonInfo.data);
+                  break;
+                case "ping":
                   var tag = socket && socket.tag && socket.tag.appName;
-                  console.log(tag || "未命名", '未检测到心跳，现在清除...');
-                  _this.removeClient(socket);
-                  _this.onServicesChanged();
-                }, _this.timeOutInteval);
-                break;
+                  //console.log(tag || "未命名", " 服务，正在 ping...", _this.timeOutInteval, "秒后将被清除。");
+                  if (socket.timerAlive) {
+                    clearTimeout(socket.timerAlive);
+                  }
+                  socket.timerAlive = setTimeout(()=> {
+                    var tag = socket && socket.tag && socket.tag.appName;
+                    console.log(tag || "未命名", '未检测到心跳，现在清除...');
+                    _this.removeClient(socket);
+                    _this.onServicesChanged();
+                  }, _this.timeOutInteval);
+                  break;
+              }
             }
           }
         } catch (e) {
-          console.error("错误的数据，必须提供 json 格式的数据。");
-          console.error(socket.remoteAddress, socket.remotePort);
-          console.error(socket.chunk);
+          tools.error("错误的数据，必须提供 json 格式的数据。", e);
+          tools.error(socket.remoteAddress, socket.remotePort);
+          tools.error(socket.chunk);
         }
 
       }
@@ -154,7 +165,7 @@ CloudeerServer.prototype.onServicesChanged = function () {
     //console.log(socket.tag);
     if (socket.writable) {
       if (!(socket.tag && socket.tag.notAConsumer)) {
-        sendJson(socket, {errno: 0, cmd: 'get-services', data: services});
+        cmdTools.sendJson(socket, {errno: 0, cmd: 'get-services', data: services});
       }
     } else {
       errClients.push(socket);
@@ -208,12 +219,12 @@ CloudeerServer.prototype.login = function (socket, username, password) {
   }
 
   if (passed) {
-    sendJson(socket, {errno: 0, cmd: 'login'});
+    cmdTools.sendJson(socket, {errno: 0, cmd: 'login'});
     this.clients.push(socket);
     console.log("有客户端加入并成功登录，已经加入列队。");
   } else {
     console.error("登录错误，拒绝加入列队");
-    sendJson(socket, {errno: 403, errText: '登录失败，连接被拒。'});
+    cmdTools.sendJson(socket, {errno: 403, errText: '登录失败，连接被拒。'});
     socket.destroy();
   }
 };
