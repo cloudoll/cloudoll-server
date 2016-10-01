@@ -21,6 +21,7 @@ const tools    = require('cloudoll').tools;
 //   });
 // };
 
+let sid = 0; //sid is socket id.
 
 function CloudeerServer(options) {
   options             = options || {};
@@ -219,8 +220,10 @@ CloudeerServer.prototype.login = function (socket, username, password) {
   }
 
   if (passed) {
-    cmdTools.sendJson(socket, {errno: 0, cmd: 'login'});
+    socket.sid = sid;
+    cmdTools.sendJson(socket, {errno: 0, cmd: 'login', data: {sid: sid}});
     this.clients.push(socket);
+    sid++;
     console.log("有客户端加入并成功登录，已经加入列队。");
   } else {
     console.error("登录错误，拒绝加入列队");
